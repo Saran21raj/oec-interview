@@ -47,8 +47,8 @@ public class UsersController : ControllerBase
     }
     [HttpGet("GetUsersMappingList")]
     [EnableQuery]
-    public List<UserMapping> GetUsersMappingList(int procedureId,int planId)
+    public List<UserMapping> GetUsersMappingList(int planId)
     {
-        return _context.UserMapping.Where(p => p.ProcedureId == procedureId && p.PlanId==planId).ToList();
+        return _context.UserMapping.Where(p => p.PlanId==planId).ToList();
     }
 }

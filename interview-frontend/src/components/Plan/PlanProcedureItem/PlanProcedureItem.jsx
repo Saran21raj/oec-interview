@@ -1,45 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
+import { useParams } from "react-router-dom";
 import ReactSelect from "react-select";
-import {
-  addUserToProcedure,
-  getUserMappingList,
-  removeUserFromProcedure,
-} from "../../../api/api";
+import { addUserToProcedure, removeUserFromProcedure } from "../../../api/api";
 
-const PlanProcedureItem = ({ procedure, users }) => {
-  const url = window.location.href.split("/");
-  const planId = url[url.length - 1];
-  useEffect(() => {
-    getUserMappingList(procedure.procedureId, planId).then((usersList) => {
-      if (usersList.length > 0) {
-        const finalList = [];
-        usersList.map((each) => {
-          const user = users.find((p) => p.value === each.userId);
-          finalList.push({
-            label: user.label,
-            value: each.userId,
-            userMappingId: each.userMappingId,
-          });
-        });
-        setSelectedUsers(finalList);
-      }
-    });
-  }, []);
-  const [selectedUsers, setSelectedUsers] = useState(null);
+const PlanProcedureItem = ({ procedure, users, selectedUsersList }) => {
+  let { id } = useParams();
+  const [selectedUsers, setSelectedUsers] = useState(selectedUsersList);
 
   const handleAssignUserToProcedure = (e) => {
     // TODO: Remove console.log and add missing logic
 
     if (selectedUsers === null) {
-      addUserToProcedure(
-        e[0].value,
-        procedure.procedureId,
-        parseInt(planId)
-      ).then((res) => {
-        setSelectedUsers([
-          { label: e[0].label, value: e[0].value, userMappingId: res },
-        ]);
-      });
+      addUserToProcedure(e[0].value, procedure.procedureId, parseInt(id)).then(
+        (res) => {
+          setSelectedUsers([
+            { label: e[0].label, value: e[0].value, userMappingId: res },
+          ]);
+        }
+      );
     } else {
       if (selectedUsers.length > e.length) {
         const removedUser = selectedUsers.filter(
@@ -65,7 +43,7 @@ const PlanProcedureItem = ({ procedure, users }) => {
         addUserToProcedure(
           addUser[0].value,
           procedure.procedureId,
-          parseInt(planId)
+          parseInt(id)
         ).then((res) => {
           setSelectedUsers((prevProps) => [
             ...prevProps,

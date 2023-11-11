@@ -66,8 +66,8 @@ export const getUsers = async () => {
   return await response.json();
 };
 
-export const getUserMappingList = async (procedureId, planId) => {
-  const url = `${api_url}/Users/GetUsersMappingList?procedureId=${procedureId}&planId=${planId}`;
+export const getUserMappingList = async (planId) => {
+  const url = `${api_url}/Users/GetUsersMappingList?planId=${planId}`;
   const response = await fetch(url, {
     method: "GET",
   });

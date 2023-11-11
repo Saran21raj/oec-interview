@@ -1,38 +1,43 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import {
   addProcedureToPlan,
   getPlanProcedures,
   getProcedures,
+  getUserMappingList,
   getUsers,
 } from "../../api/api";
-import Layout from '../Layout/Layout';
-import ProcedureItem from "./ProcedureItem/ProcedureItem";
+import Layout from "../Layout/Layout";
 import PlanProcedureItem from "./PlanProcedureItem/PlanProcedureItem";
+import ProcedureItem from "./ProcedureItem/ProcedureItem";
 
 const Plan = () => {
   let { id } = useParams();
   const [procedures, setProcedures] = useState([]);
   const [planProcedures, setPlanProcedures] = useState([]);
   const [users, setUsers] = useState([]);
+  const [procedureWiseUser, setProcedureWiseUser] = useState([]);
 
   useEffect(() => {
     (async () => {
       var procedures = await getProcedures();
       var planProcedures = await getPlanProcedures(id);
       var users = await getUsers();
-
+      const selectedPlanUsers = await getUserMappingList(id);
       var userOptions = [];
       users.map((u) => userOptions.push({ label: u.name, value: u.userId }));
 
       setUsers(userOptions);
       setProcedures(procedures);
       setPlanProcedures(planProcedures);
+      setProcedureWiseUser(selectedPlanUsers);
     })();
   }, [id]);
 
   const handleAddProcedureToPlan = async (procedure) => {
-    const hasProcedureInPlan = planProcedures.some((p) => p.procedureId === procedure.procedureId);
+    const hasProcedureInPlan = planProcedures.some(
+      (p) => p.procedureId === procedure.procedureId
+    );
     if (hasProcedureInPlan) return;
 
     await addProcedureToPlan(id, procedure.procedureId);
@@ -79,13 +84,31 @@ const Plan = () => {
                   <div className="col">
                     <h4>Added to Plan</h4>
                     <div>
-                      {planProcedures.map((p) => (
-                        <PlanProcedureItem
-                          key={p.procedure.procedureId}
-                          procedure={p.procedure}
-                          users={users}
-                        />
-                      ))}
+                      {planProcedures.map((p) => {
+                        const selectedUsers = [];
+                        procedureWiseUser.forEach((usersList) => {
+                          if (
+                            usersList.procedureId === p.procedure.procedureId
+                          ) {
+                            const user = users.find(
+                              (u) => u.value === usersList.userId
+                            );
+                            selectedUsers.push({
+                              label: user.label,
+                              value: usersList.userId,
+                              userMappingId: usersList.userMappingId,
+                            });
+                          }
+                        });
+                        return (
+                          <PlanProcedureItem
+                            key={p.procedure.procedureId}
+                            procedure={p.procedure}
+                            users={users}
+                            selectedUsersList={selectedUsers}
+                          />
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
